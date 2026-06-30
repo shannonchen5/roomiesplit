@@ -35,6 +35,18 @@ export interface Settlement {
   toPersonId: string
   amount: number
   date: string
+  /** When set, ties this settlement to a specific expense debt line. */
+  debtLineId?: string
+}
+
+export interface DebtLine {
+  id: string
+  expenseId: string
+  description: string
+  fromPersonId: string
+  toPersonId: string
+  amount: number
+  date: string
 }
 
 /** Shape persisted to storage / sent to a future API. */

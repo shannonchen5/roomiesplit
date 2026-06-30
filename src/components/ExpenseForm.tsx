@@ -29,18 +29,15 @@ export function ExpenseForm({
   const [splitBetween, setSplitBetween] = useState<string[]>([])
 
   const effectivePaidBy = paidBy || people[0]?.id || ''
-  const effectiveSplit =
-    splitBetween.length > 0 ? splitBetween : people.map((p) => p.id)
 
-  const toggleSplit = (personId: string) => {
-    setSplitBetween((prev) => {
-      const base = prev.length > 0 ? prev : people.map((p) => p.id)
-      if (base.includes(personId)) {
-        if (base.length <= 1) return base
-        return base.filter((id) => id !== personId)
-      }
-      return [...base, personId]
-    })
+  const addToSplit = (personId: string) => {
+    setSplitBetween((prev) =>
+      prev.includes(personId) ? prev : [...prev, personId]
+    )
+  }
+
+  const removeFromSplit = (personId: string) => {
+    setSplitBetween((prev) => prev.filter((id) => id !== personId))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -50,7 +47,7 @@ export function ExpenseForm({
       toast.error('Enter a description and valid amount')
       return
     }
-    if (!effectivePaidBy || effectiveSplit.length === 0) {
+    if (!effectivePaidBy || splitBetween.length === 0) {
       toast.error('Select who paid and who to split between')
       return
     }
@@ -59,7 +56,7 @@ export function ExpenseForm({
       description: description.trim(),
       amount: parsed,
       paidBy: effectivePaidBy,
-      splitBetween: effectiveSplit,
+      splitBetween,
       date,
       category,
     })
@@ -130,17 +127,37 @@ export function ExpenseForm({
           </legend>
           <div className="flex flex-wrap gap-2">
             {people.map((person) => {
-              const selected = effectiveSplit.includes(person.id)
+              const selected = splitBetween.includes(person.id)
+              if (selected) {
+                return (
+                  <span
+                    key={person.id}
+                    className="inline-flex items-center gap-1 rounded-full border border-indigo-300 bg-indigo-50 py-1 pl-1.5 pr-1.5 text-sm text-indigo-800"
+                  >
+                    <PersonAvatar
+                      name={person.name}
+                      color={person.color}
+                      size="sm"
+                    />
+                    <span>{person.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeFromSplit(person.id)}
+                      className="ml-0.5 flex h-5 w-5 items-center justify-center rounded-full text-indigo-500 transition hover:bg-indigo-200 hover:text-indigo-800"
+                      aria-label={`Remove ${person.name} from split`}
+                    >
+                      ×
+                    </button>
+                  </span>
+                )
+              }
+
               return (
                 <button
                   key={person.id}
                   type="button"
-                  onClick={() => toggleSplit(person.id)}
-                  className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition ${
-                    selected
-                      ? 'border-indigo-300 bg-indigo-50 text-indigo-800'
-                      : 'border-slate-200 bg-white text-slate-500'
-                  }`}
+                  onClick={() => addToSplit(person.id)}
+                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
                 >
                   <PersonAvatar
                     name={person.name}
@@ -153,11 +170,11 @@ export function ExpenseForm({
             })}
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            Equal split among selected people (
-            {effectiveSplit.length > 0
-              ? `$${((parseFloat(amount) || 0) / effectiveSplit.length).toFixed(2)} each`
-              : '—'}
-            )
+            {splitBetween.length === 0
+              ? 'Tap a roommate to include them in the split.'
+              : `Equal split among ${splitBetween.length} ${
+                  splitBetween.length === 1 ? 'person' : 'people'
+                } ($${((parseFloat(amount) || 0) / splitBetween.length).toFixed(2)} each)`}
           </p>
         </fieldset>
 

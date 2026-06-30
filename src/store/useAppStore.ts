@@ -6,6 +6,7 @@ import { todayISO } from '../lib/dates'
 import { emptyAppData, localStorageStore } from '../lib/storage'
 import type {
   AppData,
+  DebtLine,
   Expense,
   ExpenseCategory,
   Person,
@@ -30,7 +31,14 @@ interface AppState extends AppData {
     billingPeriodEnd: string
     daysPresent: Record<string, number>
   }) => void
-  addSettlement: (fromPersonId: string, toPersonId: string, amount: number) => void
+  addSettlement: (
+    fromPersonId: string,
+    toPersonId: string,
+    amount: number,
+    debtLineId?: string
+  ) => void
+  removeSettlementForDebtLine: (debtLineId: string) => void
+  toggleDebtLineSettlement: (line: DebtLine) => void
   hydrate: () => void
 }
 
@@ -155,7 +163,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     })
   },
 
-  addSettlement: (fromPersonId, toPersonId, amount) => {
+  addSettlement: (fromPersonId, toPersonId, amount, debtLineId) => {
     if (amount <= 0) return
 
     const settlement: Settlement = {
@@ -164,6 +172,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       toPersonId,
       amount,
       date: todayISO(),
+      debtLineId,
     }
 
     set((state) => {
@@ -174,6 +183,33 @@ export const useAppStore = create<AppState>((set, get) => ({
       persist(next)
       return next
     })
+  },
+
+  removeSettlementForDebtLine: (debtLineId) => {
+    set((state) => {
+      const next = {
+        ...state,
+        settlements: state.settlements.filter(
+          (s) => s.debtLineId !== debtLineId
+        ),
+      }
+      persist(next)
+      return next
+    })
+  },
+
+  toggleDebtLineSettlement: (line) => {
+    const { settlements, addSettlement, removeSettlementForDebtLine } = get()
+    if (settlements.some((s) => s.debtLineId === line.id)) {
+      removeSettlementForDebtLine(line.id)
+    } else {
+      addSettlement(
+        line.fromPersonId,
+        line.toPersonId,
+        line.amount,
+        line.id
+      )
+    }
   },
 }))
 

@@ -1,4 +1,4 @@
-import type { Expense, Person, Settlement } from '../types'
+import type { DebtLine, Expense, Person, Settlement } from '../types'
 
 export function calculateShare(expense: Expense, personId: string): number {
   if (!expense.splitBetween.includes(personId)) return 0
@@ -56,6 +56,48 @@ export function computePairwiseDebts(
 }
 
 /** Positive = net owed to this person; negative = net they owe others. */
+export function computeDebtLines(expenses: Expense[]): DebtLine[] {
+  const lines: DebtLine[] = []
+
+  for (const expense of expenses) {
+    const payer = expense.paidBy
+    for (const personId of expense.splitBetween) {
+      if (personId === payer) continue
+      const share = calculateShare(expense, personId)
+      if (share <= 0) continue
+
+      lines.push({
+        id: `${expense.id}:${personId}:${payer}`,
+        expenseId: expense.id,
+        description: expense.description,
+        fromPersonId: personId,
+        toPersonId: payer,
+        amount: share,
+        date: expense.date,
+      })
+    }
+  }
+
+  return lines.sort((a, b) => b.date.localeCompare(a.date))
+}
+
+export function isDebtLineSettled(
+  debtLineId: string,
+  settlements: Settlement[]
+): boolean {
+  return settlements.some((s) => s.debtLineId === debtLineId)
+}
+
+export function debtLinesForPerson(
+  lines: DebtLine[],
+  personId: string
+): DebtLine[] {
+  return lines.filter(
+    (line) =>
+      line.fromPersonId === personId || line.toPersonId === personId
+  )
+}
+
 export function computeNetBalance(
   personId: string,
   people: Person[],

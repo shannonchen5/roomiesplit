@@ -139,23 +139,15 @@ export function Dashboard({ onNavigate }: DashboardProps) {
         </div>
       </Card>
 
-      {people.length > 0 && (
-        <Card title="Roommate tabs">
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {people.map((person) => (
-              <button
-                key={person.id}
-                type="button"
-                onClick={() => onNavigate('person-tab', person.id)}
-                className="flex items-center gap-3 rounded-lg border border-slate-200 p-3 text-left transition hover:border-indigo-300 hover:bg-indigo-50/50"
-              >
-                <PersonAvatar name={person.name} color={person.color} />
-                <span className="font-medium text-slate-800">{person.name}</span>
-              </button>
-            ))}
-          </div>
+        <Card title="Balances">
+          <button
+            type="button"
+            onClick={() => onNavigate('expenses')}
+            className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+          >
+            View all balances →
+          </button>
         </Card>
-      )}
     </div>
   )
 }

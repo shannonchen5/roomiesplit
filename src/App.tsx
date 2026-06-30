@@ -2,12 +2,10 @@ import { useEffect, useState } from 'react'
 import { CommunityGoodsChart } from './components/CommunityGoodsChart'
 import { Dashboard } from './components/Dashboard'
 import { ExpenseForm } from './components/ExpenseForm'
+import { ExpensesTracker } from './components/ExpensesTracker'
 import { Layout } from './components/Layout'
 import { PersonManager } from './components/PersonManager'
-import { PersonRoster } from './components/PersonRoster'
-import { PersonTab } from './components/PersonTab'
 import { UtilityProrationForm } from './components/UtilityProrationForm'
-import { Card } from './components/ui/Card'
 import { useAppStore } from './store/useAppStore'
 import type { ViewId } from './types'
 
@@ -27,9 +25,8 @@ function App() {
     if (personId) setSelectedPersonId(personId)
   }
 
-  const handleSelectPerson = (id: string) => {
-    setSelectedPersonId(id)
-    setView('person-tab')
+  const handleSelectPerson = (_id: string) => {
+    setView('expenses')
   }
 
   const pageTitle: Record<ViewId, string> = {
@@ -61,33 +58,13 @@ function App() {
       {view === 'expenses' && (
         <div className="space-y-6">
           <ExpenseForm />
-          {people.length > 0 && (
-            <Card title="View by person">
-              <div className="mb-4 lg:hidden">
-                <PersonRoster
-                  selectedPersonId={selectedPersonId}
-                  onSelectPerson={handleSelectPerson}
-                />
-              </div>
-              {selectedPersonId ? (
-                <PersonTab personId={selectedPersonId} />
-              ) : (
-                <p className="text-sm text-slate-500">
-                  Select a roommate to view their tab.
-                </p>
-              )}
-            </Card>
-          )}
+          <ExpensesTracker />
         </div>
       )}
 
       {view === 'community-goods' && <CommunityGoodsChart />}
 
       {view === 'utilities' && <UtilityProrationForm />}
-
-      {view === 'person-tab' && selectedPersonId && (
-        <PersonTab personId={selectedPersonId} />
-      )}
     </Layout>
   )
 }
