@@ -35,14 +35,14 @@ export function ExpensesTracker() {
 
   return (
     <Card title="Balances">
-      <div className="flex gap-4 overflow-x-auto pb-2">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
         {people.map((person) => {
           const lines = debtLinesForPerson(debtLines, person.id)
 
           return (
             <div
               key={person.id}
-              className="flex min-h-72 w-56 shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+              className="flex min-h-72 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
               style={{ borderTopWidth: 4, borderTopColor: person.color }}
             >
               <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-3">
